@@ -1,5 +1,5 @@
 message SubMsg {
-	required string test = 1; // token that should be sent to server next time synchronization occure
+	required string test = 1;
 }
 
 message SampleOneofMsg {

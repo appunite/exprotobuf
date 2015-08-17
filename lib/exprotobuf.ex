@@ -83,7 +83,7 @@ defmodule Protobuf do
   defp namespace_fields(_, fields, _),     do: fields
   defp namespace_fields(field, ns) when not is_map(field) do
     case elem(field, 0) do
-      :gpb_oneof -> field |> Utils.convert_from_record(OneofField) |> namespace_fields(elem(field,3))
+      :gpb_oneof -> field |> Utils.convert_from_record(OneofField)
       _ -> field |>Utils.convert_from_record(Field) |> namespace_fields(ns)
     end
   end
