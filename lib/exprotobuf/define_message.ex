@@ -1,11 +1,10 @@
-require IEx
 defmodule Protobuf.DefineMessage do
   @moduledoc false
 
   alias Protobuf.Decoder
   alias Protobuf.Encoder
   alias Protobuf.Field
-  alias Protobuf.OneField
+  alias Protobuf.OneofField
 
   def def_message(name, fields, inject: inject) when is_list(fields) do
     struct_fields = record_fields(fields)
@@ -87,8 +86,7 @@ defmodule Protobuf.DefineMessage do
   end
 
   defp oneof_fields_methods(fields) do
-    for %OneField{name: name, rnum: rnum} = field <- fields do
-      IEx.pry
+    for %OneofField{name: name, rnum: rnum} = field <- fields do
       quote location: :keep do
         def defs(:field, unquote(rnum)), do: unquote(Macro.escape(field))
         def defs(:field, unquote(name)), do: defs(:field, unquote(rnum))
@@ -113,7 +111,7 @@ defmodule Protobuf.DefineMessage do
       end}
     end
     ++
-    for %OneField{name: name} <- fields do
+    for %OneofField{name: name} <- fields do
       {name, nil}
     end
 

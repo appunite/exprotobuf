@@ -1,15 +1,14 @@
-require IEx
 defmodule Protobuf.Encoder do
   alias Protobuf.Utils
   alias Protobuf.Field
-  alias Protobuf.OneField
+  alias Protobuf.OneofField
 
   def encode(%{} = msg, defs) do
     fixed_defs = for {{type, mod}, fields} <- defs, into: [] do
       case type do
         :msg  -> {{:msg, mod}, Enum.map(fields, fn field -> 
           case field do
-            %Protobuf.OneField{} -> field |> Utils.convert_to_record(OneField)
+            %Protobuf.OneofField{} -> field |> Utils.convert_to_record(OneofField)
             %Protobuf.Field{} -> field |> Utils.convert_to_record(Field)
           end
         end)}

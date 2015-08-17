@@ -5,7 +5,7 @@ defmodule Protobuf.Utils do
     # Convert module name if necessary
     record_name = case module do
       Protobuf.Field -> :field
-      Protobuf.OneField -> :gpb_oneof
+      Protobuf.OneofField -> :gpb_oneof
       _              -> module
     end
     # Convert the map to it's record representation by

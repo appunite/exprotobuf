@@ -55,7 +55,7 @@ defmodule Protobuf.Decoder.Test do
   end
   
   test "oneof fields" do
-    defmodule OneOfFields do
+    defmodule OneOfFieldsProto do
       use Protobuf, """
         message Msg {
           optional string one = 1;
@@ -68,6 +68,12 @@ defmodule Protobuf.Decoder.Test do
         }
       """
     end
+    
+    bytes = <<10, 3, 120, 120, 121, 26, 3, 120, 120, 121>>
+    module = OneOfFieldsProto.Msg
+    
+    
+    
   end
 
   test "enums" do
