@@ -1,3 +1,4 @@
+require IEx
 defmodule Protobuf do
   alias Protobuf.Parser
   alias Protobuf.Builder
@@ -83,7 +84,7 @@ defmodule Protobuf do
   defp namespace_fields(_, fields, _),     do: fields
   defp namespace_fields(field, ns) when not is_map(field) do
     case elem(field, 0) do
-      :gpb_oneof -> field |> Utils.convert_from_record(OneofField)
+      :gpb_oneof -> field |> Utils.convert_from_record(OneofField) |> namespace_fields(ns)
       _ -> field |>Utils.convert_from_record(Field) |> namespace_fields(ns)
     end
   end
@@ -94,7 +95,7 @@ defmodule Protobuf do
     field
   end
   defp namespace_fields(%OneofField{} = field, _ns) do
-    field
+    field |> Map.put(:fields, Enum.map(field.fields, &namespace_fields(&1, _ns))) 
   end
 
   defp namespace_fields(rec, ns) do
