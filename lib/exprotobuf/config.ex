@@ -16,5 +16,6 @@ defmodule Protobuf.Config do
   defstruct namespace: nil,
             schema: "",
             only: [],
-            inject: false
+            inject: false,
+            from_file: nil
 end
