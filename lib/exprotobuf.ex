@@ -1,9 +1,11 @@
+require IEx
 defmodule Protobuf do
   alias Protobuf.Parser
   alias Protobuf.Builder
   alias Protobuf.Config
   alias Protobuf.ConfigError
   alias Protobuf.Field
+  alias Protobuf.OneField
   alias Protobuf.Utils
 
   defmacro __using__(opts) do
@@ -75,13 +77,24 @@ defmodule Protobuf do
   defp namespace_fields(:msg, fields, ns), do: Enum.map(fields, &namespace_fields(&1, ns))
   defp namespace_fields(_, fields, _),     do: fields
   defp namespace_fields(field, ns) when not is_map(field) do
-    field |> Utils.convert_from_record(Field) |> namespace_fields(ns)
+    case elem(field, 0) do
+      :gpb_oneof -> field |> Utils.convert_from_record(OneField) |> namespace_fields(elem(field,3))
+      _ -> field |>Utils.convert_from_record(Field) |> namespace_fields(ns)
+    end
   end
   defp namespace_fields(%Field{type: {type, name}} = field, ns) do
     %{field | :type => {type, :"#{ns}.#{name |> normalize_name}"}}
   end
   defp namespace_fields(%Field{} = field, _ns) do
     field
+  end
+  defp namespace_fields(%OneField{} = field, _ns) do
+    field
+  end
+
+  defp namespace_fields(rec, ns) do
+    IEx.pry
+    IO.puts rec
   end
 
   # Normalizes module names by ensuring they are cased correctly

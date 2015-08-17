@@ -1,13 +1,20 @@
+require IEx
 defmodule Protobuf.Decoder do
   use Bitwise, only_operators: true
   alias Protobuf.Field
+  alias Protobuf.OneField
   alias Protobuf.Utils
 
   # Decode with record/module
   def decode(bytes, module) do
     defs = for {{type, mod}, fields} <- module.defs, into: [] do
       case type do
-        :msg  -> {{:msg, mod}, Enum.map(fields, fn field -> field |> Utils.convert_to_record(Field) end)}
+        :msg  -> {{:msg, mod}, Enum.map(fields, fn field -> 
+          case field do
+            %Protobuf.Field{} -> field |> Utils.convert_to_record(Field)
+            %Protobuf.OneField{} -> field |> Utils.convert_to_record(OneField)            
+          end
+        end)}
         :enum -> {{:enum, mod}, fields}
         :extensions -> {{:extensions, mod}, fields}
       end
@@ -30,6 +37,7 @@ defmodule Protobuf.Decoder do
         if value == :undefined do
           Map.put(msg, field, default)
         else
+          IEx.pry
           convert_field(value, msg, module.defs(:field, field))
         end
     end)
@@ -47,6 +55,10 @@ defmodule Protobuf.Decoder do
       _ ->
         msg
     end
+  end
+  
+  defp convert_field(value, msg, %OneField{name: field}) do
+    msg
   end
 
   defp convert_value(:string, value),   do: :unicode.characters_to_binary(value)
