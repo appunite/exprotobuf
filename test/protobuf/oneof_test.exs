@@ -1,7 +1,5 @@
 defmodule Protobuf.Oneof.Test do
   use Protobuf.Case
-  
-  @tag timeout: 100000000
 
   defmodule Msgs do
     use Protobuf, from: Path.expand("../proto/oneof.proto", __DIR__)
