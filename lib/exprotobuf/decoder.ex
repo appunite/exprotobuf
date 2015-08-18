@@ -8,10 +8,10 @@ defmodule Protobuf.Decoder do
   def decode(bytes, module) do
     defs = for {{type, mod}, fields} <- module.defs, into: [] do
       case type do
-        :msg  -> {{:msg, mod}, Enum.map(fields, fn field -> 
+        :msg  -> {{:msg, mod}, Enum.map(fields, fn field ->
           case field do
             %Protobuf.Field{} -> field |> Utils.convert_to_record(Field)
-            %Protobuf.OneofField{} -> field |> Utils.convert_to_record(OneofField)            
+            %Protobuf.OneofField{} -> field |> Utils.convert_to_record(OneofField)
           end
         end)}
         :enum -> {{:enum, mod}, fields}
@@ -54,11 +54,16 @@ defmodule Protobuf.Decoder do
         msg
     end
   end
-  
+
   defp convert_field(value, msg, %OneofField{name: field}) do
+    {key, inner_value} = value
     cond do
-      is_map(elem(value,1)) -> {elem(value,0), convert_fields(elem(value,1))}
-      true -> msg
+      is_tuple(inner_value) ->
+        {module, _} = inner_value
+        converted_value = {key, inner_value |> Utils.convert_from_record(module) |> convert_fields}
+        Map.put(msg, field, converted_value)
+      true ->
+        Map.put(msg, field, value)
     end
   end
 

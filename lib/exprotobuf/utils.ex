@@ -16,10 +16,9 @@ defmodule Protobuf.Utils do
     # defined in the schema, get that field from the map,
     # then add it to a list of values matching the record's
     # original order. Convert that list to a tuple when done.
-    
     case module do
       Protobuf.OneofField ->
-        module.record 
+        module.record
         |> Enum.reduce([record_name], fn {key, default}, acc ->
           value = Map.get(map, key, default)
           cond do
@@ -29,11 +28,11 @@ defmodule Protobuf.Utils do
               [value|acc]
           end
         end)
-        |> Enum.reverse 
+        |> Enum.reverse
         |> List.to_tuple
-        
+
       _ ->
-        module.record 
+        module.record
         |> Enum.reduce([record_name], fn {key, default}, acc ->
           value = Map.get(map, key, default)
           [value|acc]
