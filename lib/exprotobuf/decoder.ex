@@ -56,7 +56,10 @@ defmodule Protobuf.Decoder do
   end
   
   defp convert_field(value, msg, %OneofField{name: field}) do
-    msg
+    cond do
+      is_map(elem(value,1)) -> {elem(value,0), convert_fields(elem(value,1))}
+      true -> msg
+    end
   end
 
   defp convert_value(:string, value),   do: :unicode.characters_to_binary(value)

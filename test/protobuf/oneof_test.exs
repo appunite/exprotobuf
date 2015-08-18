@@ -1,7 +1,7 @@
-require IEx
-
 defmodule Protobuf.Oneof.Test do
   use Protobuf.Case
+  
+  @tag timeout: 100000000
 
   defmodule Msgs do
     use Protobuf, from: Path.expand("../proto/oneof.proto", __DIR__)
@@ -44,11 +44,21 @@ defmodule Protobuf.Oneof.Test do
   end
   
   test "can encode oneof protos with sub messages" do
-    msg = Msgs.AdvancedOneofMsg.new(one: Msgs.SubMsg.new(test: "xxx"), 
-                                          foo: {:body, Msgs.SubMsg.new(test: "yyy")})
+    msg = Msgs.AdvancedOneofMsg.new(one: Msgs.SubMsg.new(test: "xxx"), foo: {:body, Msgs.SubMsg.new(test: "yyy")})
 
 
     encoded = Msgs.AdvancedOneofMsg.encode(msg)
+    
+    binary = <<10, 5, 10, 3, 120, 120, 120, 26, 5, 10, 3, 121, 121, 121>>
+    
+    assert binary == encoded
+  end
+  
+  test "can decode oneof protos with sub messages" do
+    binary = <<10, 5, 10, 3, 120, 120, 120, 26, 5, 10, 3, 121, 121, 121>>
+    
+    msg = Msgs.SampleOneofMsg.decode(binary)
+    assert %Msgs.SampleOneofMsg{foo: {:body,  Msgs.SubMsg.new(test: "yyy")}, one: Msgs.SubMsg.new(test: "xxx")} == msg
   end
   
 end

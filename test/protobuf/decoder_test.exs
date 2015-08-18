@@ -54,28 +54,6 @@ defmodule Protobuf.Decoder.Test do
     assert %{:__struct__ => ^module, :f1 => "a", :f2 => %{:__struct__ => ^submod, :f1 => "abc"}} = D.decode(bytes, FixingStringValuesProto.Msg)
   end
   
-  test "oneof fields" do
-    defmodule OneOfFieldsProto do
-      use Protobuf, """
-        message Msg {
-          optional string one = 1;
-          optional string two = 2;
-        
-          oneof foo {
-            string body = 3;
-            uint32 code = 4;
-          }
-        }
-      """
-    end
-    
-    bytes = <<10, 3, 120, 120, 121, 26, 3, 120, 120, 121>>
-    module = OneOfFieldsProto.Msg
-    
-    
-    
-  end
-
   test "enums" do
     defmodule EnumsProto do
       use Protobuf, """

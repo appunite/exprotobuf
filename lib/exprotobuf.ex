@@ -1,4 +1,3 @@
-require IEx
 defmodule Protobuf do
   alias Protobuf.Parser
   alias Protobuf.Builder

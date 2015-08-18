@@ -1,4 +1,3 @@
-require IEx
 defmodule Protobuf.Utils do
   @moduledoc false
   alias Protobuf.OneofField
@@ -20,8 +19,6 @@ defmodule Protobuf.Utils do
     
     case module do
       Protobuf.OneofField ->
-        fields = map.fields
-        
         module.record 
         |> Enum.reduce([record_name], fn {key, default}, acc ->
           value = Map.get(map, key, default)

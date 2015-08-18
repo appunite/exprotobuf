@@ -16,8 +16,8 @@ defmodule Protobuf.Encoder do
         :extensions -> {{:extensions, mod}, fields}
       end
     end
-    
-    msg
+        
+    msg  
     |> fix_undefined
     |> Utils.convert_to_record(msg.__struct__)
     |> :gpb.encode_msg(fixed_defs)
@@ -39,5 +39,7 @@ defmodule Protobuf.Encoder do
   defp fix_value(nil),                         do: :undefined
   defp fix_value(values) when is_list(values), do: Enum.map(values, &fix_value/1)
   defp fix_value(value)  when is_map(value),   do: value |> fix_undefined |> Utils.convert_to_record(value.__struct__)
+  defp fix_value(value)  when is_tuple(value) and is_map(elem(value, 1)), do: {elem(value,0), elem(value, 1) |> Utils.convert_to_record(elem(value, 1).__struct__)}
   defp fix_value(value),                       do: value
 end
+
