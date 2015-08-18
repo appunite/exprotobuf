@@ -97,10 +97,6 @@ defmodule Protobuf do
     field |> Map.put(:fields, Enum.map(field.fields, &namespace_fields(&1, _ns))) 
   end
 
-  defp namespace_fields(rec, ns) do
-    IO.puts rec
-  end
-
   # Normalizes module names by ensuring they are cased correctly
   # (respects camel-case and nested modules)
   defp normalize_name(name) do
