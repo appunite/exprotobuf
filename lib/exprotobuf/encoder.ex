@@ -6,18 +6,18 @@ defmodule Protobuf.Encoder do
   def encode(%{} = msg, defs) do
     fixed_defs = for {{type, mod}, fields} <- defs, into: [] do
       case type do
-        :msg  -> {{:msg, mod}, Enum.map(fields, fn field -> 
+        :msg  -> {{:msg, mod}, Enum.map(fields, fn field ->
           case field do
-            %Protobuf.OneofField{} -> field |> Utils.convert_to_record(OneofField)
-            %Protobuf.Field{} -> field |> Utils.convert_to_record(Field)
+            %OneofField{} -> field |> Utils.convert_to_record(OneofField)
+            %Field{} -> field |> Utils.convert_to_record(Field)
           end
         end)}
         :enum -> {{:enum, mod}, fields}
         :extensions -> {{:extensions, mod}, fields}
       end
     end
-        
-    msg  
+
+    msg
     |> fix_undefined
     |> Utils.convert_to_record(msg.__struct__)
     |> :gpb.encode_msg(fixed_defs)
@@ -42,4 +42,3 @@ defmodule Protobuf.Encoder do
   defp fix_value(value)  when is_tuple(value) and is_map(elem(value, 1)), do: {elem(value,0), elem(value, 1) |> Utils.convert_to_record(elem(value, 1).__struct__)}
   defp fix_value(value),                       do: value
 end
-
