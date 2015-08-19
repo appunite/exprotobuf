@@ -10,8 +10,8 @@ defmodule Protobuf.Decoder do
       case type do
         :msg  -> {{:msg, mod}, Enum.map(fields, fn field ->
           case field do
-            %Protobuf.Field{} -> field |> Utils.convert_to_record(Field)
-            %Protobuf.OneofField{} -> field |> Utils.convert_to_record(OneofField)
+            %Field{} -> field |> Utils.convert_to_record(Field)
+            %OneofField{} -> field |> Utils.convert_to_record(OneofField)
           end
         end)}
         :enum -> {{:enum, mod}, fields}
