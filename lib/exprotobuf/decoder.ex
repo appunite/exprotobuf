@@ -59,7 +59,7 @@ defmodule Protobuf.Decoder do
     {key, inner_value} = value
     cond do
       is_tuple(inner_value) ->
-        {module, _} = inner_value
+        module = elem(inner_value, 0)
         converted_value = {key, inner_value |> Utils.convert_from_record(module) |> convert_fields}
         Map.put(msg, field, converted_value)
       true ->
