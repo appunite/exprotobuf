@@ -8,6 +8,7 @@ defmodule Protobuf do
 
   defmacro __using__(opts) do
     namespace = __CALLER__.module
+
     config = case opts do
       << schema :: binary >> ->
         %Config{namespace: namespace, schema: schema}
@@ -34,6 +35,34 @@ defmodule Protobuf do
           []       -> raise ConfigError, error: "You must specify a type using :only when combined with inject: true"
           [_type]  -> %Config{namespace: namespace, schema: read_file(file, __CALLER__), only: types, inject: true, from_file: file}
         end
+
+      # FIXME:
+      # Duplicate all options with include_package because I don't know how else to do this. This needs to be refactored due to exponential branching
+      [<< schema :: binary >>, include_package: include_package] ->
+        %Config{namespace: namespace, schema: schema, include_package: include_package}
+      [<< schema :: binary >>, only: only, include_package: include_package] ->
+        %Config{namespace: namespace, schema: schema, only: parse_only(only, __CALLER__), include_package: include_package}
+      [<< schema :: binary >>, inject: true, include_package: include_package] ->
+        only = namespace |> Module.split |> Enum.join(".") |> String.to_atom
+        %Config{namespace: namespace, schema: schema, only: [only], inject: true, include_package: include_package}
+      [<< schema :: binary >>, only: only, inject: true, include_package: include_package] ->
+        types = parse_only(only, __CALLER__)
+        case types do
+          []       -> raise ConfigError, error: "You must specify a type using :only when combined with inject: true"
+          [_type]  -> %Config{namespace: namespace, schema: schema, only: types, inject: true, include_package: include_package}
+        end
+      from: file, include_package: include_package ->
+        %Config{namespace: namespace, schema: read_file(file, __CALLER__), from_file: file, include_package: include_package}
+      [from: file, only: only, include_package: include_package] ->
+        %Config{namespace: namespace, schema: read_file(file, __CALLER__), only: parse_only(only, __CALLER__), from_file: file, include_package: include_package}
+      [from: file, inject: true, include_package: include_package] ->
+        %Config{namespace: namespace, schema: read_file(file, __CALLER__), only: [namespace], inject: true, from_file: file, include_package: include_package}
+      [from: file, only: only, inject: true, include_package: include_package] ->
+        types = parse_only(only, __CALLER__)
+        case types do
+          []       -> raise ConfigError, error: "You must specify a type using :only when combined with inject: true"
+          [_type]  -> %Config{namespace: namespace, schema: read_file(file, __CALLER__), only: types, inject: true, from_file: file, include_package: include_package}
+        end
     end
 
     config |> parse(__CALLER__) |> Builder.define(config)
@@ -56,23 +85,42 @@ defmodule Protobuf do
   end
 
   # Parse and fix namespaces of parsed types
-  defp parse(%Config{namespace: ns, schema: schema, inject: inject, from_file: nil}, _) do
-    Parser.parse!(schema) |> namespace_types(ns, inject)
+  defp parse(%Config{namespace: ns, schema: schema, inject: inject, from_file: nil, include_package: include_package}, _) do
+    Parser.parse!(schema) |> namespace_types(ns, inject, include_package)
   end
-  defp parse(%Config{namespace: ns, schema: schema, inject: inject, from_file: file}, caller) do
+  defp parse(%Config{namespace: ns, schema: schema, inject: inject, from_file: file, include_package: include_package}, caller) do
     {path, _} = Code.eval_quoted(file, [], caller)
     path      = Path.expand(path) |> Path.dirname
     opts      = [imports: [path]]
-    Parser.parse!(schema, opts) |> namespace_types(ns, inject)
+    Parser.parse!(schema, opts) |> namespace_types(ns, inject, include_package)
+  end
+
+  # Find the package namespace
+  defp detect_package(parsed) do
+    parsed |> Enum.find_value(fn(row) ->
+      case row do
+        {:package, package} -> package
+        _ -> false
+      end
+    end)
+  end
+
+  defp namespace_types(parsed, ns, inject, include_package) do
+    # Apply namespace to top-level types
+    detect_package(parsed) |> namespace_types(parsed, ns, inject, include_package)
   end
 
   # Apply namespace to top-level types
-  defp namespace_types(parsed, ns, inject) do
+  defp namespace_types(package, parsed, ns, inject, include_package) do
     for {{type, name}, fields} <- parsed do
       if inject do
         {{type, :"#{name |> normalize_name}"}, namespace_fields(type, fields, ns)}
       else
-        {{type, :"#{ns}.#{name |> normalize_name}"}, namespace_fields(type, fields, ns)}
+        if package && include_package do
+          {{type, :"#{ns}.#{package}.#{name |> normalize_name}"}, namespace_fields(type, fields, ns)}
+        else
+          {{type, :"#{ns}.#{name |> normalize_name}"}, namespace_fields(type, fields, ns)}
+        end
       end
     end
   end
