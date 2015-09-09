@@ -16,6 +16,22 @@ defmodule Protobuf.Decoder.Test do
     assert %{:__struct__ => ^module, :f1 => nil, :f2 => 150} = D.decode(<<16, 150, 1>>, UndefinedValuesProto.Msg)
   end
 
+  test "package namespace" do
+    defmodule PackageProto do
+      use Protobuf, ["""
+        package TopLevel;
+        message Msg {
+          optional int32 f1 = 1;
+          required int32 f2 = 2;
+        }
+        """,
+        include_package: true]
+    end
+
+    module = PackageProto.TopLevel.Msg
+    assert %{:__struct__ => ^module, :f1 => nil, :f2 => 150} = D.decode(<<16, 150, 1>>, PackageProto.TopLevel.Msg)
+  end
+
   test "fix repeated values" do
     defmodule RepeatedValuesProto do
       use Protobuf, """
