@@ -1,6 +1,6 @@
 defmodule Protobuf.Utils do
   @moduledoc false
-  alias Protobuf.OneofField
+  alias Protobuf.OneOfField
   alias Protobuf.Field
 
   def convert_to_record(map, module) do
@@ -13,19 +13,13 @@ defmodule Protobuf.Utils do
     |> List.to_tuple
   end
 
-  defp record_name(OneofField), do: :gpb_oneof
+  defp record_name(OneOfField), do: :gpb_oneof
   defp record_name(Field), do: :field
   defp record_name(type), do: type
 
-  defp value_transform(OneofField = module, value) do
-    cond do
-      is_list(value) ->
-        Enum.map(value, &convert_to_record(&1, Field))
-      true ->
-        value
-    end
+  defp value_transform(OneOfField = module, value) when is_list(value) do
+    Enum.map(value, &convert_to_record(&1, Field))
   end
-
   defp value_transform(module, value), do: value
 
 

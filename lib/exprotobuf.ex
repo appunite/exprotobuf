@@ -4,7 +4,7 @@ defmodule Protobuf do
   alias Protobuf.Config
   alias Protobuf.ConfigError
   alias Protobuf.Field
-  alias Protobuf.OneofField
+  alias Protobuf.OneOfField
   alias Protobuf.Utils
 
   defmacro __using__(opts) do
@@ -83,8 +83,8 @@ defmodule Protobuf do
   defp namespace_fields(_, fields, _),     do: fields
   defp namespace_fields(field, ns) when not is_map(field) do
     case elem(field, 0) do
-      :gpb_oneof -> field |> Utils.convert_from_record(OneofField) |> namespace_fields(ns)
-      _ -> field |>Utils.convert_from_record(Field) |> namespace_fields(ns)
+      :gpb_oneof -> field |> Utils.convert_from_record(OneOfField) |> namespace_fields(ns)
+      _          -> field |> Utils.convert_from_record(Field) |> namespace_fields(ns)
     end
   end
   defp namespace_fields(%Field{type: {type, name}} = field, ns) do
@@ -93,8 +93,8 @@ defmodule Protobuf do
   defp namespace_fields(%Field{} = field, _ns) do
     field
   end
-  defp namespace_fields(%OneofField{} = field, _ns) do
-    field |> Map.put(:fields, Enum.map(field.fields, &namespace_fields(&1, _ns))) 
+  defp namespace_fields(%OneOfField{} = field, _ns) do
+    field |> Map.put(:fields, Enum.map(field.fields, &namespace_fields(&1, _ns)))
   end
 
   # Normalizes module names by ensuring they are cased correctly

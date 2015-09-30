@@ -1,20 +1,21 @@
 defmodule Protobuf.Decoder do
   use Bitwise, only_operators: true
   alias Protobuf.Field
-  alias Protobuf.OneofField
+  alias Protobuf.OneOfField
   alias Protobuf.Utils
 
   # Decode with record/module
   def decode(bytes, module) do
     defs = for {{type, mod}, fields} <- module.defs, into: [] do
       case type do
-        :msg  -> {{:msg, mod}, Enum.map(fields, fn field ->
-          case field do
-            %Field{} -> field |> Utils.convert_to_record(Field)
-            %OneofField{} -> field |> Utils.convert_to_record(OneofField)
-          end
-        end)}
-        :enum -> {{:enum, mod}, fields}
+        :msg ->
+          {{:msg, mod}, Enum.map(fields, fn field ->
+            case field do
+              %Field{}      -> Utils.convert_to_record(field, Field)
+              %OneOfField{} -> Utils.convert_to_record(field, OneOfField)
+            end
+          end)}
+        :enum       -> {{:enum, mod}, fields}
         :extensions -> {{:extensions, mod}, fields}
       end
     end
@@ -55,7 +56,7 @@ defmodule Protobuf.Decoder do
     end
   end
 
-  defp convert_field(value, msg, %OneofField{name: field}) do
+  defp convert_field(value, msg, %OneOfField{name: field}) do
     {key, inner_value} = value
     cond do
       is_tuple(inner_value) ->
