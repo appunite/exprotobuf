@@ -13,6 +13,13 @@ defmodule Protobuf.NestedOneof.Test do
     assert is_binary(enc_c)
   end
 
+  test "can decode nested oneof proto" do
+    encoded = <<10, 5, 104, 101, 108, 108, 111, 26, 5, 10, 3, 109, 115, 103>>;
+    decoded = encoded |> Msgs.Container.decode
+
+    assert %Msgs.Container{} = decoded
+  end
+
   test "can encode deeply nested oneof proto" do
     sfm = Msgs.SingleFooMetadata.new baz_id: "baz_id"
     fm = Msgs.FooMetadata.new type: {:single_metadata, sfm}
@@ -21,6 +28,14 @@ defmodule Protobuf.NestedOneof.Test do
     enc_c = c |> Msgs.Container.encode
 
     assert is_binary(enc_c)
+  end
+
+  test "can decode deeply nested oneof proto" do
+    encoded = <<18, 22, 10, 6, 102, 111, 111, 95, 105, 100, 16, 0, 26, 10, 18,
+      8, 10, 6, 98, 97, 122, 95, 105, 100>>
+    decoded = encoded |> Msgs.Container.decode
+
+    assert %Msgs.Container{} = decoded
   end
 
 end
